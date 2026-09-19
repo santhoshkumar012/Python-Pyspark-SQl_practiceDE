@@ -1,0 +1,146 @@
+# Practice Questions
+
+Dataset: see `README.md`. **Revenue** = delivered orders, net of discount, excluding shipping, unless stated otherwise.
+
+Solve **Section A in SQL, then again in pandas and PySpark**. Sections B–F are tool-specific. 
+
+---
+
+## Section A — SQL / pandas / PySpark (same questions, three tools)
+
+
+### Basic
+
+**Q01 — Row counts.** Return the number of rows in every table as (table_name, row_count).
+
+**Q02 — Order status share.** For each order_status give the number of orders and its percentage share of all orders (2 decimals), largest first.
+
+**Q03 — Priciest active products.** List the 5 most expensive ACTIVE products (name, category, unit_price).
+
+**Q04 — Customers by state.** Top 5 states by number of customers, along with how many of those customers are Platinum tier.
+
+**Q05 — Orders per channel per year (pivot).** One row per order year, one column per channel (Web, Mobile App, Marketplace, Store) containing the number of orders. Do it with conditional aggregation.
+
+**Q06 — Missing contact details.** How many customers have a missing email, a missing phone, and both missing? (one row, three columns)
+
+
+### Intermediate
+
+**Q07 — Revenue by category.** Net revenue per product category for DELIVERED orders, plus each category's % of total revenue. (net = quantity x unit_price x (1 - discount_pct/100); ignore shipping.)
+
+**Q08 — Top customers.** Top 10 customers by lifetime net revenue (delivered orders). Show customer_id, full name, number of orders, lifetime revenue and average order value.
+
+**Q09 — Customers who never ordered.** How many customers never placed ANY order (any status)? Break the answer down by loyalty_tier. Use an anti-join (LEFT JOIN ... IS NULL or NOT EXISTS).
+
+**Q10 — Month-over-month growth.** Monthly net revenue (delivered) for 2025 with month-over-month % change. Note what happens to December and explain why.
+
+**Q11 — AOV by channel.** Average order value (item net revenue per delivered order, excluding shipping) and order count per channel.
+
+**Q12 — Payment success rate.** For each payment_method: total payments, successful payments and success rate %, ignoring payments still 'Pending'.
+
+**Q13 — Slow-moving active products.** List ACTIVE products that appear in fewer than 10 order items in total, INCLUDING products with zero sales (so a plain INNER JOIN will not work). Show product_id, name, category and item count.
+
+**Q14 — Return rate by category.** For each category: delivered items sold, items returned, and return rate %. (An item is 'returned' if it has a row in returns.)
+
+**Q15 — Gross margin by brand.** Top 5 brands by gross margin % on delivered orders. margin = net revenue - quantity x cost_price; margin % = margin / net revenue. Show revenue, margin and margin %.
+
+**Q16 — Shipped to a different city.** Per channel: how many orders were shipped to a city different from the customer's home city, and what % of the channel's orders is that?
+
+
+### Advanced
+
+**Q17 — Top 3 products per category.** For each category return its top 3 products by delivered net revenue (rank within category). Ties must share a rank (DENSE_RANK).
+
+**Q18 — Running total per year.** Monthly delivered net revenue with a running (cumulative) total that RESETS each year.
+
+**Q19 — Purchase-frequency buckets.** Bucket customers by their number of delivered orders: '1', '2-5', '6-10', '11-20', '21+'. Return bucket, customers, and % of buyers. Customers with zero delivered orders are excluded.
+
+**Q20 — Average gap between orders.** Among customers with at least 5 delivered orders, find the 5 with the SMALLEST average number of days between consecutive delivered orders (use LAG). Show customer_id, orders, avg_gap_days.
+
+**Q21 — RFM scoring.** As of 2025-12-31, score every customer with delivered orders on Recency (days since last order), Frequency (order count) and Monetary (revenue) using NTILE(4) each (4 = best; break ties with customer_id so the result is deterministic). Return how many customers fall in each total RFM score (R+F+M).
+
+**Q22 — Latest order above own average.** Among customers with 2+ delivered orders, how many (and what %) have a MOST RECENT delivered order whose value is above their own average order value?
+
+**Q23 — Bought together.** Top 10 pairs of products most often bought together in the same delivered order. Each pair must appear once (p1 < p2). Show both product names.
+
+**Q24 — Payment reconciliation.** A payment should equal the sum of the order's item net amounts + shipping_fee. How many orders have a payment amount that differs by more than 0.01, and what is the total absolute difference?
+
+**Q25 — Longest daily order streak (gaps & islands).** Find the longest run of consecutive calendar days on which at least one order was placed. Return start_date, end_date, days.
+
+**Q26 — Second-best product per category.** Return the SECOND highest delivered-revenue product in each category (nth-highest pattern).
+
+**Q27 — 7-day moving average.** Daily net revenue of NON-cancelled orders with a 7-day moving average (current day + 6 previous days). Show only the last 10 days of the data. (Hint: the window must be computed BEFORE you filter to 10 days.)
+
+**Q28 — Year-over-year by category.** Delivered net revenue per category for 2024 and 2025 side by side, with YoY growth %.
+
+**Q29 — Pareto check.** Rank products by delivered revenue and split them into 5 equal buckets with NTILE(5) (bucket 1 = best; break ties by product_id). What % of total revenue does each bucket contribute?
+
+
+---
+
+## Section B — Core Python (standard library only, no pandas)
+
+- **P01** Read `customers.csv` with `csv.DictReader`. Print the row count and the 5 states with the most customers (`collections.Counter`).
+- **P02** Write `is_valid_email(s)` (regex). Count missing and invalid emails in `customers.csv`, then in `dirty_customers.csv`.
+- **P03** Write `age_on(dob, as_of)` using `datetime.date` (completed years). Report the average age as of 2025-12-31 and the 3 oldest customers (ties → lowest customer_id).
+- **P04** Stream `order_items.csv` with a **generator** (never load the whole file). Compute total gross value (`quantity × unit_price`, no discount) and gross value per `discount_pct`.
+- **P05** With `defaultdict`, count orders per month from `orders.csv`; print the 3 busiest months.
+- **P06** Build `dict`s for products and orders. Without pandas, find the 5 best-selling products by **units in delivered orders**.
+- **P07** Use `heapq.nlargest` to find the top 3 delivered orders by net value without sorting all orders.
+- **P08** Write a `@timed` decorator and a `chunked(iterable, n)` generator. Process `order_items` in chunks of 5,000 and report time per chunk.
+- **P09** Parse `events.jsonl` line by line (`json.loads`). Deduplicate on `event_id`; report counts per `event_type`, % anonymous, and the top 5 (os, browser) pairs.
+- **P10** Model an order with a `@dataclass` that validates `order_status` against the allowed set. Load all orders into objects; group by status using `itertools.groupby`.
+- **P11** Write a summary report to `report.json` (`json.dump`, `indent=2`) containing counts, date range and revenue by year.
+- **P12** Write `pytest` tests for `is_valid_email` and `age_on` (include edge cases: leap day, birthday on the as-of date, empty/None).
+
+## Section C — pandas: cleaning `dirty_customers.csv`
+
+Ground truth for the same customers is in `customers.csv`, so you can verify your cleaning.
+
+- **D01** Load with all columns as `str`. Report shape, nulls per column, fully duplicated rows and duplicated `customer_id`s. *Gotcha: what does `read_csv` do with the strings `'N/A'` and `'NA'`?*
+- **D02** Strip whitespace and title-case `first_name`, `last_name`.
+- **D03** Standardise `gender` to `Male / Female / Other`.
+- **D04** Standardise `city` (bangalore, BLR → Bengaluru; Bombay → Mumbai; Madras → Chennai; New Delhi → Delhi).
+- **D05** Parse `date_of_birth` — four different formats plus `'N/A'`. Ambiguity trap: `03-04-1990` vs `03/04/1990` vs `03-Apr-1990`.
+- **D06** Normalise `phone` to a 10-digit string (formats: `+91-…`, `+91 xxxxx xxxxx`, `xxxxx-xxxxx`, leading `0`).
+- **D07** Lower-case `email` and add an `email_valid` flag.
+- **D08** Remove duplicates, keeping the most complete row per `customer_id`.
+- **D09** Validate: join to `customers.csv` and prove that cleaned `date_of_birth` and `phone` match the ground truth wherever present.
+- **D10** Save the cleaned frame as Parquet with proper dtypes (`category` for low-cardinality columns, nullable ints) and compare file size to the CSV.
+
+## Section D — pandas-specific skills
+
+- **M01** Merge `order_items → orders → products` with `validate=` set correctly and assert the row count did not change after each join.
+- **M02** `pivot_table` of delivered revenue: rows = category, columns = year, with margins.
+- **M03** Named aggregation: per customer → orders, revenue, first_order, last_order, avg gap in days (`groupby().agg(...)` with named outputs).
+- **M04** `transform`: add each order's share of its customer's total revenue as a column.
+- **M05** `resample("W")` weekly revenue and a 4-week `rolling` mean.
+- **M06** `pd.cut` order values into Low/Medium/High bands (choose cut points from `describe()`), and `pd.qcut` customers into revenue quartiles.
+- **M07** Read `order_items.csv` with `chunksize=10_000` and compute revenue per product without holding the file in memory. Compare peak memory with `dtype`/`category` optimisation (`df.memory_usage(deep=True)`).
+
+## Section E — PySpark-specific
+
+- **S01** Read every CSV once with `inferSchema=True` and once with the explicit schemas from `03_pyspark_setup.py`. Compare timing and column types; explain why production jobs use explicit schemas.
+- **S02** Solve **Q07** with `spark.sql` and with the DataFrame API (`join`, `groupBy`, `agg`, `Window`). Assert both results are identical.
+- **S03** Solve **Q17** (top 3 per category) using `Window.partitionBy().orderBy()` and `dense_rank()`.
+- **S04** From `events`, flatten `device` and `geo`, `explode` the `items` array and find the top 5 products by **units purchased**.
+- **S05** Deduplicate events on `event_id` (keep the earliest `event_ts`) using **both** `dropDuplicates` and `row_number()`; explain when they differ.
+- **S06** Sessionise: per `session_id` compute start, end, duration (s), number of events, purchased flag; report conversion % by `device.os`.
+- **S07** Build a funnel: distinct sessions reaching `page_view → add_to_cart → checkout_start → purchase` and step-to-step conversion.
+- **S08** Join `order_items` with `products` using `broadcast()`; read `.explain()` and find `BroadcastHashJoin`. Disable broadcasting (`spark.sql.autoBroadcastJoinThreshold = -1`, AQE off) and compare to `SortMergeJoin`.
+- **S09** Write `order_items ⨝ orders` as Parquet **partitioned** by order year and month. Inspect the folder layout; then read only 2025 and prove **partition pruning** with `.explain()` (`PartitionFilters`).
+- **S10** Write a Python **UDF** that labels order value Low/Medium/High; rewrite with `when/otherwise`; compare plans and time. Explain why built-ins win.
+- **S11** Data-quality report: null checks, uniqueness of keys, referential integrity via `left_anti` joins (orders→customers, items→products, returns→items) and the payment reconciliation rule. Output one DataFrame `(check, failed_rows, status)`.
+- **S12** `rollup` and `cube` on `(category, channel)` revenue; use `grouping()`/`grouping_id()` to label subtotal rows.
+- **S13** `approx_count_distinct` vs `countDistinct` on `events.session_id`; `percentile_approx` for median order value per channel.
+- **S14** Repartition/coalesce: print `df.rdd.getNumPartitions()` before/after `repartition(16)`, `coalesce(2)` and `repartition("channel")`; explain the shuffle differences.
+- **S15** Skew: find the hottest `product_id` values in `order_items`; implement a **salted join** to `products` and explain when it helps.
+- **S16** Cache: run an aggregation twice with and without `.cache()`; inspect the Spark UI (http://localhost:4040) for the storage tab.
+- **S17** Write a `pytest` test with a local SparkSession fixture for one transformation function (input DataFrame built in the test → expected output).
+
+## Section F — Mini pipelines (portfolio-style)
+
+- **X01 Medallion pipeline.** *Bronze:* ingest every raw file as-is (+ `ingest_ts`, `source_file`). *Silver:* type-cast, clean `dirty_customers`, dedupe and flatten `events`, quarantine bad rows. *Gold:* `daily_sales`, `customer_360` (orders, revenue, RFM tier, return rate), `product_performance`. Write each layer as Parquet, make each job **idempotent** (rerun = same result) and log row counts per layer.
+- **X02 SCD Type 2.** Simulate 200 customers changing `city`. Implement a Type-2 `dim_customer` (`valid_from`, `valid_to`, `is_current`) using only DataFrame operations; re-running the same change file must not create duplicates.
+- **X03 Incremental load.** Split `orders` by month into daily/monthly files, then load them one at a time into a target table using a high-water mark; handle late-arriving updates to `order_status`.
+- **X04 Reconciliation report.** Compare row counts and revenue totals between SQLite (`practice.db`), pandas and Spark for all Section A questions and produce a pass/fail table.
